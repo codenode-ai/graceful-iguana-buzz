@@ -6,26 +6,62 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { employees as initialEmployees, Employee } from "@/lib/mockData";
 import { useToast } from "@/components/ui/use-toast";
+import { useEmployees } from "@/hooks/useEmployees";
+
+// Componente temporário para testes - em produção isso viria do contexto de autenticação
+const useCompany = () => {
+  // Para testes, usamos o ID da empresa de exemplo do script 04_sample_data.sql
+  return { companyId: '11111111-1111-1111-1111-111111111111' };
+};
 
 const Employees = () => {
-  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
-  const [newEmployee, setNewEmployee] = useState({ name: "", language: "", observations: "" });
+  const { companyId } = useCompany();
+  const { employees, loading, error, addEmployee } = useEmployees(companyId);
+  const [newEmployee, setNewEmployee] = useState({ name: "", language: "", notes: "" });
   const { toast } = useToast();
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newEmployee.name && newEmployee.language) {
-      const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
-      setEmployees([...employees, { id: newId, ...newEmployee } as Employee]);
-      setNewEmployee({ name: "", language: "", observations: "" });
-      toast({
-        title: "Sucesso!",
-        description: "Nova funcionária adicionada.",
-      });
+      try {
+        await addEmployee({ 
+          name: newEmployee.name, 
+          language: newEmployee.language, 
+          notes: newEmployee.notes 
+        });
+        
+        setNewEmployee({ name: "", language: "", notes: "" });
+        toast({
+          title: "Sucesso!",
+          description: "Nova funcionária adicionada.",
+        });
+      } catch (err) {
+        toast({
+          title: "Erro",
+          description: err instanceof Error ? err.message : "Falha ao adicionar funcionária.",
+          variant: "destructive",
+        });
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <h3 className="font-bold">Erro ao carregar funcionários:</h3>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -39,11 +75,19 @@ const Employees = () => {
             <form onSubmit={handleAddEmployee} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome</Label>
-                <Input id="name" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} required />
+                <Input 
+                  id="name" 
+                  value={newEmployee.name} 
+                  onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} 
+                  required 
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="language">Idioma</Label>
-                <Select onValueChange={(value) => setNewEmployee({ ...newEmployee, language: value })} value={newEmployee.language}>
+                <Select 
+                  onValueChange={(value) => setNewEmployee({ ...newEmployee, language: value })} 
+                  value={newEmployee.language}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o idioma" />
                   </SelectTrigger>
@@ -55,8 +99,12 @@ const Employees = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="observations">Observações</Label>
-                <Textarea id="observations" value={newEmployee.observations} onChange={(e) => setNewEmployee({ ...newEmployee, observations: e.target.value })} />
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea 
+                  id="notes" 
+                  value={newEmployee.notes} 
+                  onChange={(e) => setNewEmployee({ ...newEmployee, notes: e.target.value })} 
+                />
               </div>
               <Button type="submit" className="w-full">Adicionar</Button>
             </form>
@@ -82,7 +130,7 @@ const Employees = () => {
                   <TableRow key={employee.id}>
                     <TableCell className="font-medium">{employee.name}</TableCell>
                     <TableCell>{employee.language}</TableCell>
-                    <TableCell>{employee.observations}</TableCell>
+                    <TableCell>{employee.notes}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

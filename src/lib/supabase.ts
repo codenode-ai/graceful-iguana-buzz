@@ -8,4 +8,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // The client will be null if the keys are not provided, preventing errors.
-export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
+export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, {
+  db: {
+    schema: 'sociometria'
+  }
+}) : null
