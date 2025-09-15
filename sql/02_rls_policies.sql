@@ -1,10 +1,13 @@
 -- 02_rls_policies.sql
 -- Habilita RLS
+alter table sociometria.companies enable row level security;
 alter table sociometria.profiles enable row level security;
 alter table sociometria.employees enable row level security;
 alter table sociometria.responses enable row level security;
 
 -- Remover políticas existentes primeiro para evitar conflitos
+drop policy if exists "companies insert own" on sociometria.companies;
+drop policy if exists "profiles insert own" on sociometria.profiles;
 drop policy if exists "responses insert own" on sociometria.responses;
 drop policy if exists "responses read same company" on sociometria.responses;
 drop policy if exists "responses admin rw" on sociometria.responses;
@@ -34,6 +37,16 @@ stable
 as $function$
   select exists(select 1 from sociometria.profiles p where p.user_id = auth.uid() and p.role = 'admin')
 $function$;
+
+-- COMPANIES: permitir que usuários criem sua primeira empresa
+create policy "companies insert own" on sociometria.companies
+  for insert
+  with check (true); -- Allow any authenticated user to create a company initially
+
+-- PROFILES: permitir que usuários criem seu próprio perfil
+create policy "profiles insert own" on sociometria.profiles
+  for insert
+  with check (user_id = auth.uid()); -- Allow user to create their own profile
 
 -- PROFILES: usuário só enxerga o próprio perfil
 create policy "profiles select own" on sociometria.profiles
