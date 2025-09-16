@@ -28,13 +28,8 @@ const Login = () => {
       if (isSignUp) {
         console.log('Iniciando processo de criação de conta com email:', email);
         // Criar novo usuário
-        const { data: authData, error: signUpError } = await signUp(email, password);
-        console.log('Resultado do signUp:', { authData, signUpError });
-        
-        if (signUpError) {
-          console.error('Erro no signUp:', signUpError);
-          throw signUpError;
-        }
+        const authData = await signUp(email, password);
+        console.log('Resultado do signUp:', authData);
         
         // Verificar se authData existe e tem a estrutura correta
         if (authData && authData.user) {
