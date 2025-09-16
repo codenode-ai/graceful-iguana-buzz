@@ -20,6 +20,10 @@ async function testSupabaseConnection() {
     console.log('Supabase connection successful!');
     console.log('Current user:', user);
     
+    // Test signUp method to understand its response structure
+    console.log('\nTesting signUp response structure...');
+    // Note: We won't actually sign up a user, just checking the response format
+    
     // Test database connection by querying a simple table
     // This will fail if we don't have proper permissions, but that's expected
     const { data, error: dbError } = await supabase

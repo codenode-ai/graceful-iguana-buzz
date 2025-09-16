@@ -22,30 +22,62 @@ const Login = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Iniciando processo de autenticação. Modo:', isSignUp ? 'Sign Up' : isMagicLink ? 'Magic Link' : 'Sign In');
     
     try {
       if (isSignUp) {
+        console.log('Iniciando processo de criação de conta com email:', email);
         // Criar novo usuário
         const { data: authData, error: signUpError } = await signUp(email, password);
+        console.log('Resultado do signUp:', { authData, signUpError });
         
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          console.error('Erro no signUp:', signUpError);
+          throw signUpError;
+        }
         
-        if (authData.user) {
-          // Criar empresa padrão para o novo usuário
-          const company = await createDefaultCompany(companyName || `${email}'s Company`);
+        // Verificar se authData existe e tem a estrutura correta
+        if (authData && authData.user) {
+          console.log('Usuário criado com sucesso:', authData.user);
+          try {
+            // Criar empresa padrão para o novo usuário
+            console.log('Criando empresa padrão para:', companyName || `${email}'s Company`);
+            const company = await createDefaultCompany(companyName || `${email}'s Company`);
+            console.log('Empresa criada:', company);
+            
+            // Criar perfil para o usuário
+            console.log('Criando perfil para usuário:', authData.user.id, 'na empresa:', company.id);
+            await createProfile(authData.user.id, company.id, 'admin');
+            console.log('Perfil criado com sucesso');
+            
+            toast({
+              title: "Conta criada!",
+              description: "Sua conta foi criada com sucesso. Faça login para continuar.",
+            });
+          } catch (creationError: any) {
+            console.error('Erro ao criar empresa ou perfil:', creationError);
+            toast({
+              title: "Conta criada, mas houve um problema ao configurar sua empresa",
+              description: creationError.message || "Entre em contato com o suporte para assistência.",
+              variant: "destructive",
+            });
+          }
           
-          // Criar perfil para o usuário
-          await createProfile(authData.user.id, company.id, 'admin');
-          
+          // Mudar para modo de login após criar a conta
+          setIsSignUp(false);
+        } else {
+          console.log('SignUp realizado, mas sem dados de usuário. Pode ser necessário confirmar o e-mail.');
+          // Caso não tenha retornado um usuário, mostrar mensagem apropriada
           toast({
             title: "Conta criada!",
-            description: "Sua conta foi criada com sucesso. Faça login para continuar.",
+            description: "Verifique seu e-mail para confirmar sua conta.",
           });
           
           // Mudar para modo de login após criar a conta
           setIsSignUp(false);
         }
       } else if (isMagicLink) {
+        console.log('Enviando link mágico para:', email);
         // Enviar link mágico
         await signInWithMagicLink(email);
         toast({
@@ -53,11 +85,13 @@ const Login = () => {
           description: "Verifique seu e-mail para o link de acesso.",
         });
       } else {
+        console.log('Realizando login normal com email:', email);
         // Login normal
         await signIn(email, password);
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Authentication error:", error);
       toast({
         title: isSignUp ? "Erro ao criar conta" : "Erro no login",
         description: error.message || (isSignUp ? "Falha ao criar conta. Tente novamente." : "Falha ao fazer login. Tente novamente."),

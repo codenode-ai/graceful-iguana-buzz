@@ -5,6 +5,8 @@ export const createDefaultCompany = async (companyName: string) => {
     throw new Error('Supabase client is not initialized');
   }
 
+  console.log('Tentando criar empresa:', companyName);
+  
   // Criar uma nova empresa
   const { data, error } = await supabase
     .from('companies')
@@ -13,8 +15,10 @@ export const createDefaultCompany = async (companyName: string) => {
     .single();
 
   if (error) {
+    console.error('Erro ao criar empresa:', error);
     throw error;
   }
 
+  console.log('Empresa criada com sucesso:', data);
   return data;
 };

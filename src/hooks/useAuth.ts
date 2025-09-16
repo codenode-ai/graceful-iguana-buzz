@@ -75,16 +75,28 @@ export const useAuth = () => {
       throw new Error('Supabase client is not initialized');
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        // Tratamento especial para erro 429 (Too Many Requests)
+        if (error.status === 429) {
+          throw new Error('Muitas tentativas de criação de conta. Por favor, aguarde alguns minutos antes de tentar novamente.');
+        }
+        throw error;
+      }
+
+      return data;
+    } catch (error: any) {
+      // Tratamento adicional para erro de rede ou outros erros inesperados
+      if (error.message && error.message.includes('Failed to fetch')) {
+        throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
+      }
       throw error;
     }
-
-    return data;
   };
 
   const signOut = async () => {
@@ -104,14 +116,22 @@ export const useAuth = () => {
       throw new Error('Supabase client is not initialized');
     }
 
+    console.log('Tentando criar/atualizar perfil para usuário:', userId, 'na empresa:', companyId);
+    
     // Verificar se o perfil já existe
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: selectError } = await supabase
       .from('profiles')
       .select('user_id')
       .eq('user_id', userId)
       .single();
 
+    if (selectError && selectError.code !== 'PGRST116') { // PGRST116 = nenhum registro encontrado
+      console.error('Erro ao verificar perfil existente:', selectError);
+      throw selectError;
+    }
+
     if (existingProfile) {
+      console.log('Perfil já existe, atualizando...');
       // Atualizar perfil existente
       const { data, error } = await supabase
         .from('profiles')
@@ -119,16 +139,25 @@ export const useAuth = () => {
         .eq('user_id', userId)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        throw error;
+      }
+      console.log('Perfil atualizado:', data);
       return data;
     } else {
+      console.log('Criando novo perfil...');
       // Criar novo perfil
       const { data, error } = await supabase
         .from('profiles')
         .insert([{ user_id: userId, company_id: companyId, role }])
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao criar perfil:', error);
+        throw error;
+      }
+      console.log('Perfil criado:', data);
       return data;
     }
   };

@@ -1,0 +1,21 @@
+chunk-7WYZBWXT.js?v=5066aaa4:21609 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+test-supabase-integration.ts:4 === Supabase Integration Test ===
+test-supabase-integration.ts:13 Test 1: Checking Supabase connection...
+react-router-dom.js?v=5066aaa4:4393 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ react-router-dom.js?v=5066aaa4:4393
+react-router-dom.js?v=5066aaa4:4393 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ react-router-dom.js?v=5066aaa4:4393
+test-supabase-integration.ts:19 ✅ Supabase connection successful
+test-supabase-integration.ts:20 👤 Current user: gabialmeidadev@gmail.com
+test-supabase-integration.ts:24 
+Test 2: Testing database access...
+test-supabase-integration.ts:37 ✅ Database access successful
+test-supabase-integration.ts:38 📊 Sample data: Array(0)
+test-supabase-integration.ts:42 
+Test 3: Checking schema structure...
+test-supabase-integration.ts:56 ✅ Schema access successful
+test-supabase-integration.ts:59 
+=== Test Summary ===
+test-supabase-integration.ts:60 ✅ Supabase integration is properly configured
+test-supabase-integration.ts:61 ℹ️  Some operations may fail due to Row Level Security (RLS) - this is expected
+test-supabase-integration.ts:62 ℹ️  Authentication is required for full functionality
