@@ -1,0 +1,78 @@
+PRD – Plataforma Sociométrica para Empresas de Limpeza (MVP Enxuto)
+
+1. Objetivo
+Construir uma plataforma SaaS simples que ajude donas de empresas de limpeza a montar equipes mais coesas, reduzindo conflitos e turnover. O MVP permite cadastrar funcionárias, aplicar um questionário sociométrico básico, gerar um sociograma interativo e exportar um relatório em PDF com insights claros.
+
+2. Público-Alvo
+- Donas/gestoras de empresas de limpeza com equipes entre 10 e 100 funcionárias.
+- Psicólogas/consultoras que apoiam essas empresas.
+
+3. Funcionalidades do MVP
+
+3.1. Autenticação e Perfis
+- Login por e-mail/senha ou magic link (via Supabase Auth).
+- Perfis: Admin (dona da empresa) e Funcionária (responde questionário).
+
+3.2. Gestão de Funcionárias
+- Admin cadastra funcionárias: nome, idioma, observações.
+- Status por funcionária: pendente ou respondeu.
+- [Futuro] Importação via CSV.
+
+3.3. Questionário Sociométrico
+- 3 perguntas fixas:
+  1. Com quem você gostaria de limpar uma casa difícil?
+  2. Quem você chamaria para revisar seu trabalho antes do cliente ver?
+  3. Com quem você se sente mais tranquila no transporte?
+- Seleção múltipla (checkbox).
+- Cada resposta gera vínculo sociométrico.
+- Cada funcionária só responde uma vez.
+
+3.4. Sociograma Interativo
+- Grafo com D3.js.
+- Nós = funcionárias. Tamanho e cor indicam centralidade e integração.
+- Arestas = vínculos. Linha mais grossa para vínculos recíprocos.
+
+3.5. Relatórios
+- Geração de PDF com:
+  - Sociograma estático.
+  - Lista de líderes, pares de confiança, isoladas.
+- Download no painel da Admin.
+
+3.6. Fluxos Especiais
+- Funcionárias novas aparecem como nós sem conexão (“necessita integração”).
+- Aviso se menos de 50% responderem o questionário.
+
+4. Arquitetura Técnica
+
+Frontend:
+- React + Vite + TailwindCSS
+- D3.js para sociograma
+- jsPDF + html2canvas para PDF
+
+Backend:
+- Supabase (PostgreSQL + Auth + Storage + Edge Functions)
+- Funções para gerar links únicos, gravar respostas e carregar dados
+
+5. Fluxos
+
+Admin:
+- Login → Dashboard → Cadastrar funcionárias → Enviar questionários → Ver sociograma → Gerar relatório
+
+Funcionária:
+- Clica no link → Responde 3 perguntas → Recebe mensagem de agradecimento
+
+6. Roadmap
+
+Fase 1 (0–3 meses):
+- MVP completo com cadastro, questionário, sociograma e relatório PDF.
+
+Fase 2 (3–6 meses):
+- Importação CSV, envio automático via n8n, exportação CSV.
+
+Fase 3 (6–12 meses):
+- Sugestão de equipes com IA, integração com perfil psicológico (TraitView).
+
+7. Critérios de Sucesso
+- Empresas piloto aplicam o sistema com sucesso em menos de 10 minutos.
+- Feedback positivo das gestoras sobre clareza dos resultados.
+- Melhora percebida em formação de equipes e redução de conflitos.
