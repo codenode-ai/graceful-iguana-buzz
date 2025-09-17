@@ -1,0 +1,38 @@
+src/
+├── app/                      # Infraestrutura da aplicação
+│   ├── App.tsx
+│   ├── main.tsx
+│   ├── router.tsx            # Configuração de rotas
+│   └── providers/            # Contextos globais (Auth, Company, QueryClient)
+│
+├── features/                 # Domínios da aplicação (DDD "light")
+│   ├── auth/                 # Login, registro, contexto de usuário
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── api/
+│   ├── employees/            # Gestão de funcionárias
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── api/
+│   ├── questionnaires/       # Envio e resposta de questionários
+│   ├── sociogram/            # Visualização sociométrica
+│   ├── reports/              # Relatórios em PDF
+│   └── companies/            # Gestão de empresas (multiempresa)
+│
+├── shared/                   # Recursos comuns
+│   ├── components/           # UI genérica (botões, inputs, dialogs)
+│   ├── hooks/                # Hooks reutilizáveis (ex: use-toast)
+│   ├── utils/                # Funções utilitárias
+│   └── lib/                  # Integrações externas (supabase.ts, api client)
+│
+├── styles/                   # Estilos globais
+│   ├── globals.css
+│
+├── sql/                      # Scripts de banco
+│   ├── 01_schema.sql
+│   ├── 02_rls_policies.sql
+│   ├── 03_storage.sql
+│   └── 04_sample_data.sql
+│
+└── types/                    # Tipos globais do projeto
+    └── index.d.ts
