@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/shared/lib/supabase";
+import { toast } from "@/shared/components/ui/use-toast";
 
 export type UserRole = "admin" | "manager" | "employee" | "superadmin";
 
@@ -124,6 +125,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession ?? null);
       if (!nextSession) {
+        toast({ title: 'Sessao encerrada', description: 'Entre novamente para continuar.' });
         queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.removeQueries({ queryKey: ["company"] });
       }

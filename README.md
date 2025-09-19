@@ -64,3 +64,18 @@ As senhas devem ser definidas manualmente via dashboard do Supabase ou usando o 
 
 - Implementar `AuthProvider` no frontend e proteger rotas com base nas roles.
 - Construir onboarding de empresas, convites e painel `/admin-saas` usando as estruturas criadas.
+
+## Autenticação: recuperação e confirmação de e-mail
+
+- Recuperar senha
+  - Rota pública: `/forgot-password` (envia link via `supabase.auth.resetPasswordForEmail`).
+  - Configure em Project Settings → Authentication → Redirect URLs para incluir a origem do app (ex.: `http://localhost:5173/reset-password`).
+  - Rota pública: `/reset-password` (define a nova senha via `supabase.auth.updateUser`).
+
+- Reenviar confirmação de e-mail
+  - Na tela de Login, há a ação “Reenviar confirmacao” que chama `supabase.auth.resend({ type: 'signup', email })`.
+  - Em desenvolvimento você pode ativar “Auto confirm new users” no Dashboard (Authentication → Providers → Email) caso não tenha SMTP configurado.
+
+- Dicas
+  - Garanta que `SITE_URL`/Redirect URLs no Supabase contém a origem local e de produção do frontend.
+  - Personalize os templates de e-mail em Authentication → Templates (opcional).

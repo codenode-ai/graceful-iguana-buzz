@@ -1,95 +1,59 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { useAuth } from "@/shared/hooks/useAuth";
 import { useToast } from "@/shared/components/ui/use-toast";
-import { createDefaultCompany } from "@/shared/lib/companyUtils";
+import { useAuth } from "@/shared/hooks/useAuth";
+import { supabase } from "@/shared/lib/supabase";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, signInWithMagicLink, signUp, createProfile } = useAuth();
   const { toast } = useToast();
+  const { signIn, signInWithMagicLink, signUp, refreshProfile } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [companyName, setCompanyName] = useState("");
   const [isMagicLink, setIsMagicLink] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
-    console.log('Iniciando processo de autenticação. Modo:', isSignUp ? 'Sign Up' : isMagicLink ? 'Magic Link' : 'Sign In');
-    
+
     try {
       if (isSignUp) {
-        console.log('Iniciando processo de criação de conta com email:', email);
-        // Criar novo usuário
-        const authData = await signUp(email, password);
-        console.log('Resultado do signUp:', authData);
-        
-        // Verificar se authData existe e tem a estrutura correta
-        if (authData && authData.user) {
-          console.log('Usuário criado com sucesso:', authData.user);
-          try {
-            // Criar empresa padrão para o novo usuário
-            console.log('Criando empresa padrão para:', companyName || `${email}'s Company`);
-            const company = await createDefaultCompany(companyName || `${email}'s Company`);
-            console.log('Empresa criada:', company);
-            
-            // Criar perfil para o usuário
-            console.log('Criando perfil para usuário:', authData.user.id, 'na empresa:', company.id);
-            await createProfile(authData.user.id, company.id, 'admin');
-            console.log('Perfil criado com sucesso');
-            
-            toast({
-              title: "Conta criada!",
-              description: "Sua conta foi criada com sucesso. Faça login para continuar.",
-            });
-          } catch (creationError: any) {
-            console.error('Erro ao criar empresa ou perfil:', creationError);
-            toast({
-              title: "Conta criada, mas houve um problema ao configurar sua empresa",
-              description: creationError.message || "Entre em contato com o suporte para assistência.",
-              variant: "destructive",
-            });
-          }
-          
-          // Mudar para modo de login após criar a conta
-          setIsSignUp(false);
-        } else {
-          console.log('SignUp realizado, mas sem dados de usuário. Pode ser necessário confirmar o e-mail.');
-          // Caso não tenha retornado um usuário, mostrar mensagem apropriada
-          toast({
-            title: "Conta criada!",
-            description: "Verifique seu e-mail para confirmar sua conta.",
-          });
-          
-          // Mudar para modo de login após criar a conta
-          setIsSignUp(false);
-        }
-      } else if (isMagicLink) {
-        console.log('Enviando link mágico para:', email);
-        // Enviar link mágico
+        await signUp(email, password);
+
+        toast({
+          title: "Conta criada",
+          description: "Verifique o seu email para confirmar o acesso e conclua a configuracao da empresa.",
+        });
+
+        setIsSignUp(false);
+        return;
+      }
+
+      if (isMagicLink) {
         await signInWithMagicLink(email);
         toast({
-          title: "Link mágico enviado!",
-          description: "Verifique seu e-mail para o link de acesso.",
+          title: "Link magico enviado",
+          description: "Confira sua caixa de entrada para acessar a plataforma.",
         });
-      } else {
-        console.log('Realizando login normal com email:', email);
-        // Login normal
-        await signIn(email, password);
-        navigate("/");
+        return;
       }
+
+      await signIn(email, password);
+      await refreshProfile();
+      navigate("/", { replace: true });
     } catch (error: any) {
       console.error("Authentication error:", error);
       toast({
-        title: isSignUp ? "Erro ao criar conta" : "Erro no login",
-        description: error.message || (isSignUp ? "Falha ao criar conta. Tente novamente." : "Falha ao fazer login. Tente novamente."),
+        title: isSignUp ? "Erro ao criar conta" : "Erro ao entrar",
+        description:
+          error?.message || (isSignUp ? "Nao foi possivel criar a conta." : "Nao foi possivel entrar com essas credenciais."),
         variant: "destructive",
       });
     } finally {
@@ -98,84 +62,88 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4 dark:bg-gray-900">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">{isSignUp ? "Criar Conta" : "Login"}</CardTitle>
+          <CardTitle className="text-2xl">{isSignUp ? "Criar conta" : "Login"}</CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? "Crie uma conta com seu e-mail e senha." 
-              : "Entre com seu e-mail e senha para acessar o painel."}
+            {isSignUp ? "Use um email valido e defina uma senha." : "Entre com suas credenciais para acessar o painel."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleAuth}>
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="m@example.com" 
-                required 
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="nome@empresa.com"
+                required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
               />
             </div>
-            
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Nome da Empresa</Label>
-                <Input 
-                  id="companyName" 
-                  type="text" 
-                  placeholder="Minha Empresa de Limpeza" 
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
-              </div>
-            )}
-            
+
             {!isMagicLink && (
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  required 
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
               </div>
             )}
-            
+
             {!isSignUp && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 text-sm">
                 <input
-                  type="checkbox"
                   id="magic-link"
+                  type="checkbox"
                   checked={isMagicLink}
-                  onChange={(e) => setIsMagicLink(e.target.checked)}
+                  onChange={(event) => setIsMagicLink(event.target.checked)}
                 />
-                <Label htmlFor="magic-link">Usar link mágico</Label>
+                <Label htmlFor="magic-link">Receber link magico por email</Label>
               </div>
             )}
-            
-            <Button type="submit" className="w-full text-lg py-6" disabled={loading}>
-              {loading ? "Processando..." : (isSignUp ? "Criar Conta" : "Entrar")}
+
+            <Button className="w-full py-6 text-lg" disabled={loading} type="submit">
+              {loading ? "Processando..." : isSignUp ? "Criar conta" : isMagicLink ? "Enviar link" : "Entrar"}
             </Button>
-            
+
             <div className="text-center text-sm">
               <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
                 className="text-blue-600 hover:underline"
+                type="button"
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setIsMagicLink(false);
+                }}
               >
-                {isSignUp 
-                  ? "Já tem uma conta? Faça login" 
-                  : "Não tem uma conta? Crie uma"}
+                {isSignUp ? "Ja tem uma conta? Entrar" : "Ainda nao tem conta? Criar"}
               </button>
             </div>
           </form>
+
+          <div className="mt-2 flex items-center justify-between text-xs text-blue-600">
+            <Link to="/forgot-password" className="hover:underline">Esqueci minha senha</Link>
+            <button type="button" onClick={async () => {
+              if (!supabase) return;
+              if (!email) return;
+              try {
+                // reenviar confirmacao de email
+                // @ts-ignore
+                const { error } = await supabase.auth.resend({ type: "signup", email });
+                if (error) throw error;
+                toast({ title: "Email de confirmacao reenviado", description: "Verifique sua caixa de entrada." });
+              } catch (e: any) { toast({ title: "Nao foi possivel reenviar", description: e?.message || "Tente novamente.", variant: "destructive" });
+              }
+            }} className="hover:underline">Reenviar confirmacao</button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -183,3 +151,5 @@ const Login = () => {
 };
 
 export default Login;
+
+
