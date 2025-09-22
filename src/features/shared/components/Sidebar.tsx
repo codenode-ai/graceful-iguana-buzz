@@ -1,16 +1,31 @@
-import { NavLink } from "react-router-dom";
+﻿import { NavLink } from "react-router-dom";
 import { Home, Users, FileText, Share2, BarChart2, Building2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { useAuth } from "@/shared/hooks/useAuth";
+import type { UserRole } from "@/shared/providers/AuthProvider";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: Home },
-  { href: "/employees", label: "Funcionárias", icon: Users },
-  { href: "/questionnaires", label: "Questionários", icon: FileText },
-  { href: "/sociogram", label: "Sociograma", icon: Share2 },
-  { href: "/reports", label: "Relatórios", icon: BarChart2 },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: typeof Home;
+  roles: UserRole[];
+}
+
+const navItems: NavItem[] = [
+  { href: "/", label: "Dashboard", icon: Home, roles: ["admin", "manager", "employee", "superadmin"] },
+  { href: "/employees", label: "Funcionarios", icon: Users, roles: ["admin", "manager", "superadmin"] },
+  { href: "/questionnaires", label: "Questionarios", icon: FileText, roles: ["admin", "manager", "superadmin"] },
+  { href: "/sociogram", label: "Sociograma", icon: Share2, roles: ["admin", "superadmin"] },
+  { href: "/reports", label: "Relatorios", icon: BarChart2, roles: ["admin", "superadmin"] },
+  { href: "/admin-saas", label: "Painel SaaS", icon: Building2, roles: ["superadmin"] },
 ];
 
 const Sidebar = () => {
+  const { profile } = useAuth();
+  const role = profile?.role ?? "employee";
+
+  const filtered = navItems.filter((item) => item.roles.includes(role));
+
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 shadow-md flex-col hidden md:flex">
       <div className="p-6 flex items-center space-x-2 border-b">
@@ -19,7 +34,7 @@ const Sidebar = () => {
       </div>
       <nav className="flex-1 p-4">
         <ul>
-          {navItems.map((item) => (
+          {filtered.map((item) => (
             <li key={item.href}>
               <NavLink
                 to={item.href}
