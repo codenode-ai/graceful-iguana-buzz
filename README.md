@@ -79,3 +79,10 @@ As senhas devem ser definidas manualmente via dashboard do Supabase ou usando o 
 - Dicas
   - Garanta que `SITE_URL`/Redirect URLs no Supabase contém a origem local e de produção do frontend.
   - Personalize os templates de e-mail em Authentication → Templates (opcional).
+### Promovendo superadmin
+
+Após criar/confirmar o usuário (ex.: `contato@codenode.com.br`), execute no SQL Editor:
+```sql
+select sociometria.promote_to_superadmin('contato@codenode.com.br');
+```
+Isso garante `role = superadmin` e `company_id = null`, liberando o acesso ao painel `/admin-saas`.
