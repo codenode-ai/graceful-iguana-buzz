@@ -3,7 +3,7 @@ import { supabase } from "@/shared/lib/supabase"; // ajuste o caminho se seu cli
 
 export type Employee = {
   id: string;
-  name: string;
+  full_name: string;
   language: string;
   notes: string | null;
   company_id: string;
@@ -11,7 +11,7 @@ export type Employee = {
 };
 
 type NewEmployee = {
-  name: string;
+  full_name: string;
   language: string;
   notes?: string;
 };
@@ -47,7 +47,7 @@ export function useEmployees(companyId: string | null | undefined): UseEmployees
 
       const { data, error } = await supabase
         .from("employees")
-        .select("id, name, language, notes, company_id, created_at")
+        .select("id, full_name, language, notes, company_id, created_at")
         .eq("company_id", activeCompanyId)
         .order("created_at", { ascending: true });
 
@@ -74,7 +74,7 @@ export function useEmployees(companyId: string | null | undefined): UseEmployees
     if (!activeCompanyId) throw new Error("companyId inválido");
 
     const insertBody = {
-      name: payload.name,
+      full_name: payload.full_name,
       language: payload.language,
       notes: payload.notes ?? null,
       company_id: activeCompanyId,
@@ -83,7 +83,7 @@ export function useEmployees(companyId: string | null | undefined): UseEmployees
     const { data, error } = await supabase
       .from("employees")
       .insert(insertBody)
-      .select("id, name, language, notes, company_id, created_at")
+      .select("id, full_name, language, notes, company_id, created_at")
       .single();
 
     if (error) throw new Error(error.message);
