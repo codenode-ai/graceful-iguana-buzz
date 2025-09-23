@@ -23,7 +23,7 @@ type UseEmployees = {
   addEmployee: (payload: NewEmployee) => Promise<void>;
 };
 
-export function useEmployees(companyId: string): UseEmployees {
+export function useEmployees(companyId: string | null | undefined): UseEmployees {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

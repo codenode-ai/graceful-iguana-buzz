@@ -46,6 +46,15 @@ const Employees = () => {
     }
   };
 
+  if (!companyId) {
+    return (
+      <div className="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+        <h3 className="font-bold">Nenhuma empresa vinculada</h3>
+        <p>Conclua o onboarding da empresa para gerenciar funcionarias.</p>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
