@@ -86,3 +86,4 @@ Após criar/confirmar o usuário (ex.: `contato@codenode.com.br`), execute no SQ
 select sociometria.promote_to_superadmin('contato@codenode.com.br');
 ```
 Isso garante `role = superadmin` e `company_id = null`, liberando o acesso ao painel `/admin-saas`.
+
